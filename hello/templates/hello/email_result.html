@@ -1,0 +1,157 @@
+{% extends "hello/layout.html" %}
+{% load static %}
+
+{% block title %}Resultado da Análise{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <!-- Result Header -->
+            <div class="card shadow mb-4">
+                <div class="card-header {% if results.is_productive %}bg-success{% else %}bg-danger{% endif %} text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">
+                            <i class="fas fa-{% if results.is_productive %}check-circle{% else %}times-circle{% endif %} me-2"></i>
+                            Email Classificado como: <strong>{{ results.category|title }}</strong>
+                        </h3>
+                        <span class="badge bg-light text-dark fs-6">
+                            Confiança: {{ results.confidence_score|floatformat:1 }}%
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Email Details -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">
+                                <i class="fas fa-envelope me-2"></i>
+                                Detalhes do Email
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Remetente:</label>
+                                <p class="mb-0">{{ email.sender }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Assunto:</label>
+                                <p class="mb-0">{{ email.subject }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Data de Recebimento:</label>
+                                <p class="mb-0">{{ email.received_date|date:"d/m/Y H:i" }}</p>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Conteúdo:</label>
+                                <div class="border rounded p-3 bg-light">
+                                    {{ email.content|linebreaks }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-robot me-2"></i>
+                                Análise da IA
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Categoria:</label>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge {% if results.is_productive %}bg-success{% else %}bg-danger{% endif %} fs-6 me-2">
+                                        {{ results.category|title }}
+                                    </span>
+                                    {% if results.is_productive %}
+                                        <i class="fas fa-thumbs-up text-success"></i>
+                                    {% else %}
+                                        <i class="fas fa-thumbs-down text-danger"></i>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nível de Confiança:</label>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar {% if results.is_productive %}bg-success{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" 
+                                         style="width: {{ results.confidence_score|floatformat:0 }}%">
+                                        {{ results.confidence_score|floatformat:1 }}%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Resposta Sugerida:</label>
+                                <div class="border rounded p-3 bg-light">
+                                    {{ email.suggested_response|linebreaks }}
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-primary" onclick="copyResponse()">
+                                    <i class="fas fa-copy me-2"></i>
+                                    Copiar Resposta
+                                </button>
+                                <a href="{% url 'email_processor' %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-plus me-2"></i>
+                                    Processar Novo Email
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row mt-4">
+                <div class="col-12 text-center">
+                    <a href="{% url 'email_list' %}" class="btn btn-outline-info me-2">
+                        <i class="fas fa-list me-2"></i>
+                        Ver Todos os Emails
+                    </a>
+                    <a href="{% url 'email_analytics' %}" class="btn btn-outline-success me-2">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Ver Estatísticas
+                    </a>
+                    <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-home me-2"></i>
+                        Voltar ao Início
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function copyResponse() {
+    const responseText = `{{ email.suggested_response|escapejs }}`;
+    navigator.clipboard.writeText(responseText).then(function() {
+        // Show success message
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>Copiado!';
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-primary');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Erro ao copiar: ', err);
+        alert('Erro ao copiar para a área de transferência');
+    });
+}
+</script>
+{% endblock %}

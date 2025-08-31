@@ -1,0 +1,183 @@
+{% extends "hello/layout.html" %}
+{% load static %}
+
+{% block title %}Lista de Emails{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>
+                    <i class="fas fa-list me-2"></i>
+                    Emails Processados
+                </h2>
+                <div>
+                    <a href="{% url 'email_processor' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-plus me-2"></i>
+                        Novo Email
+                    </a>
+                    <a href="{% url 'email_analytics' %}" class="btn btn-outline-success">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Estatísticas
+                    </a>
+                </div>
+            </div>
+
+            {% if emails %}
+                <div class="card shadow">
+                    <div class="card-header bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-md-3">
+                                <strong>Remetente</strong>
+                            </div>
+                            <div class="col-md-3">
+                                <strong>Assunto</strong>
+                            </div>
+                            <div class="col-md-2">
+                                <strong>Categoria</strong>
+                            </div>
+                            <div class="col-md-2">
+                                <strong>Confiança</strong>
+                            </div>
+                            <div class="col-md-2">
+                                <strong>Ações</strong>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        {% for email in emails %}
+                        <div class="border-bottom p-3 {% cycle 'bg-light' 'bg-white' %}">
+                            <div class="row align-items-center">
+                                <div class="col-md-3">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-user-circle text-muted me-2"></i>
+                                        <span class="text-truncate">{{ email.sender }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="text-truncate" title="{{ email.subject }}">
+                                        {{ email.subject }}
+                                    </div>
+                                    <small class="text-muted">{{ email.received_date|date:"d/m/Y H:i" }}</small>
+                                </div>
+                                <div class="col-md-2">
+                                    <span class="badge {% if email.category == 'produtivo' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ email.category|title }}
+                                    </span>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="progress" style="height: 20px;">
+                                        <div class="progress-bar {% if email.category == 'produtivo' %}bg-success{% else %}bg-danger{% endif %}" 
+                                             role="progressbar" 
+                                             style="width: {{ email.confidence_score|floatformat:0 }}%">
+                                            {{ email.confidence_score|floatformat:1 }}%
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-info" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#emailModal{{ email.id }}">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="copyResponse('{{ email.suggested_response|escapejs }}')">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Email Detail Modal -->
+                        <div class="modal fade" id="emailModal{{ email.id }}" tabindex="-1">
+                            <div class="modal-dialog modal-lg">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">
+                                            <i class="fas fa-envelope me-2"></i>
+                                            Detalhes do Email
+                                        </h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6>Informações:</h6>
+                                                <p><strong>Remetente:</strong> {{ email.sender }}</p>
+                                                <p><strong>Assunto:</strong> {{ email.subject }}</p>
+                                                <p><strong>Data:</strong> {{ email.received_date|date:"d/m/Y H:i" }}</p>
+                                                <p><strong>Categoria:</strong> 
+                                                    <span class="badge {% if email.category == 'produtivo' %}bg-success{% else %}bg-danger{% endif %}">
+                                                        {{ email.category|title }}
+                                                    </span>
+                                                </p>
+                                                <p><strong>Confiança:</strong> {{ email.confidence_score|floatformat:1 }}%</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6>Conteúdo:</h6>
+                                                <div class="border rounded p-3 bg-light" style="max-height: 200px; overflow-y: auto;">
+                                                    {{ email.content|linebreaks }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-3">
+                                            <h6>Resposta Sugerida:</h6>
+                                            <div class="border rounded p-3 bg-light">
+                                                {{ email.suggested_response|linebreaks }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-primary" 
+                                                onclick="copyResponse('{{ email.suggested_response|escapejs }}')">
+                                            <i class="fas fa-copy me-2"></i>
+                                            Copiar Resposta
+                                        </button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h4 class="text-muted">Nenhum email processado ainda</h4>
+                    <p class="text-muted">Comece processando seu primeiro email!</p>
+                    <a href="{% url 'email_processor' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Processar Primeiro Email
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function copyResponse(responseText) {
+    navigator.clipboard.writeText(responseText).then(function() {
+        // Show success message
+        const btn = event.target;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check me-2"></i>Copiado!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+    }).catch(function(err) {
+        console.error('Erro ao copiar: ', err);
+        alert('Erro ao copiar para a área de transferência');
+    });
+}
+</script>
+{% endblock %}

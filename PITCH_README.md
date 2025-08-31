@@ -245,7 +245,7 @@ python demo_api.py
 
 ## 🚀 **COMEÇE AGORA**
 
-**Não perca mais tempo com emails desnecessários!**
+**Não perde mais tempo com emails desnecessários!**
 
 ```bash
 # Clone o projeto
@@ -264,5 +264,3 @@ python manage.py runserver
 
 ---
 *Desenvolvido com ❤️ e IA para maximizar sua produtividade*
-# scale-large-emails
-# scale-large-emails
