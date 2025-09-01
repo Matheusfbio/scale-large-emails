@@ -128,13 +128,16 @@
                                         </td>
                                         <td>
                                             <div class="progress" style="height: 20px;">
-                                                <div class="progress-bar {% if email.category == 'produtivo' %}bg-success{% else %}bg-danger{% endif %}" 
-                                                     role="progressbar" 
-                                                     style="width: {{ email.confidence_score|floatformat:0 }}%">
-                                                    {{ email.confidence_score|floatformat:1 }}%
+                                                <div class="progress-bar {% if email.category == 'produtivo' %}bg-success{% else %}bg-danger{% endif %}"
+                                                     role="progressbar"
+                                                     aria-valuenow="{{ email.confidence_score|floatformat:0 }}"
+                                                     aria-valuemin="0"
+                                                     aria-valuemax="100"
+                                                     style="width: {{ email.confidence_score|floatformat:0 }}%;">
+                                                        {{ email.confidence_score|floatformat:1 }}%
                                                 </div>
                                             </div>
-                                        </td>
+                                          </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

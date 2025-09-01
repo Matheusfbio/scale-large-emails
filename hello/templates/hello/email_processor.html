@@ -16,37 +16,93 @@
                     <p class="mb-0 mt-2">Classifique emails automaticamente como Produtivo ou Improdutivo</p>
                 </div>
                 <div class="card-body">
-                    <form method="post" id="emailForm">
+                    <!-- Input Method Toggle -->
+                    <div class="mb-4">
+                        <div class="btn-group w-100" role="group" aria-label="Método de entrada">
+                            <input type="radio" class="btn-check" name="inputMethod" id="textInput" value="text" checked>
+                            <label class="btn btn-outline-primary" for="textInput">
+                                <i class="fas fa-keyboard me-1"></i>Texto Direto
+                            </label>
+                            
+                            <input type="radio" class="btn-check" name="inputMethod" id="fileInput" value="file">
+                            <label class="btn btn-outline-primary" for="fileInput">
+                                <i class="fas fa-file-upload me-1"></i>Upload de Arquivo
+                            </label>
+                        </div>
+                    </div>
+
+                    <form method="post" id="emailForm" enctype="multipart/form-data">
                         {% csrf_token %}
                         
-                        <div class="mb-3">
-                            <label for="{{ form.sender.id_for_label }}" class="form-label">
-                                <i class="fas fa-user me-1"></i>{{ form.sender.label }}
+                        <!-- File Upload Section -->
+                        <div id="fileUploadSection" class="mb-3" style="display: none;">
+                            <label for="emailFile" class="form-label">
+                                <i class="fas fa-file me-1"></i>Arquivo de Email (.txt ou .pdf)
                             </label>
-                            {{ form.sender }}
-                            {% if form.sender.errors %}
-                                <div class="text-danger">{{ form.sender.errors }}</div>
-                            {% endif %}
+                            <input type="file" class="form-control" id="emailFile" name="emailFile" 
+                                   accept=".txt,.pdf" onchange="handleFileSelect(this)">
+                            <div class="form-text">Formatos aceitos: .txt, .pdf</div>
+                            <div id="fileInfo" class="mt-2" style="display: none;">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    <span id="fileName"></span> selecionado
+                                </div>
+                            </div>
+                            
+                            <!-- File Preview -->
+                            <div id="filePreview" class="mt-3" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header bg-light">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-eye me-1"></i>Preview do Arquivo
+                                        </h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="previewContent" class="border rounded p-3 bg-light" style="max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.9em; white-space: pre-wrap;"></div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <button type="button" class="btn btn-success btn-sm" onclick="fillFormFromFile()">
+                                            <i class="fas fa-magic me-1"></i>Preencher Formulário
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm ms-2" onclick="clearFilePreview()">
+                                            <i class="fas fa-times me-1"></i>Limpar
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="{{ form.subject.id_for_label }}" class="form-label">
-                                <i class="fas fa-tag me-1"></i>{{ form.subject.label }}
-                            </label>
-                            {{ form.subject }}
-                            {% if form.subject.errors %}
-                                <div class="text-danger">{{ form.subject.errors }}</div>
-                            {% endif %}
-                        </div>
+                        <!-- Text Input Section -->
+                        <div id="textInputSection">
+                            <div class="mb-3">
+                                <label for="{{ form.sender.id_for_label }}" class="form-label">
+                                    <i class="fas fa-user me-1"></i>{{ form.sender.label }}
+                                </label>
+                                {{ form.sender }}
+                                {% if form.sender.errors %}
+                                    <div class="text-danger">{{ form.sender.errors }}</div>
+                                {% endif %}
+                            </div>
 
-                        <div class="mb-3">
-                            <label for="{{ form.content.id_for_label }}" class="form-label">
-                                <i class="fas fa-file-text me-1"></i>{{ form.content.label }}
-                            </label>
-                            {{ form.content }}
-                            {% if form.content.errors %}
-                                <div class="text-danger">{{ form.content.errors }}</div>
-                            {% endif %}
+                            <div class="mb-3">
+                                <label for="{{ form.subject.id_for_label }}" class="form-label">
+                                    <i class="fas fa-tag me-1"></i>{{ form.subject.label }}
+                                </label>
+                                {{ form.subject }}
+                                {% if form.subject.errors %}
+                                    <div class="text-danger">{{ form.subject.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.content.id_for_label }}" class="form-label">
+                                    <i class="fas fa-file-text me-1"></i>{{ form.content.label }}
+                                </label>
+                                {{ form.content }}
+                                {% if form.content.errors %}
+                                    <div class="text-danger">{{ form.content.errors }}</div>
+                                {% endif %}
+                            </div>
                         </div>
 
                         <div class="d-grid gap-2">
@@ -118,8 +174,212 @@ function loadExample(type) {
     document.getElementById('{{ form.content.id_for_label }}').value = example.content;
 }
 
-// Form submission with loading indicator
-document.getElementById('emailForm').addEventListener('submit', function() {
+// Toggle between text input and file upload
+document.querySelectorAll('input[name="inputMethod"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const textSection = document.getElementById('textInputSection');
+        const fileSection = document.getElementById('fileUploadSection');
+        const textInputs = textSection.querySelectorAll('input, textarea');
+        
+        if (this.value === 'text') {
+            textSection.style.display = 'block';
+            fileSection.style.display = 'none';
+            // Clear file input and enable text inputs
+            document.getElementById('emailFile').value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('filePreview').style.display = 'none';
+            textInputs.forEach(input => {
+                input.disabled = false;
+                input.required = true;
+            });
+        } else {
+            textSection.style.display = 'none';
+            fileSection.style.display = 'block';
+            // Clear and disable text inputs
+            textInputs.forEach(input => {
+                input.value = '';
+                input.disabled = true;
+                input.required = false;
+            });
+        }
+    });
+});
+
+// Handle file selection
+function handleFileSelect(input) {
+    const file = input.files[0];
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const filePreview = document.getElementById('filePreview');
+    const previewContent = document.getElementById('previewContent');
+    
+    if (file) {
+        fileName.textContent = file.name;
+        fileInfo.style.display = 'block';
+        filePreview.style.display = 'block';
+        
+        // Validate file type
+        const fileExtension = file.name.split('.').pop().toLowerCase();
+        if (!['txt', 'pdf'].includes(fileExtension)) {
+            alert('Por favor, selecione apenas arquivos .txt ou .pdf');
+            input.value = '';
+            fileInfo.style.display = 'none';
+            filePreview.style.display = 'none';
+            return;
+        }
+        
+        // Read file content for preview
+        if (fileExtension === 'txt') {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewContent.textContent = e.target.result;
+            };
+            reader.readAsText(file);
+        } else if (fileExtension === 'pdf') {
+            // For PDF files, show a placeholder message
+            previewContent.textContent = `Arquivo PDF: ${file.name}\n\nPara visualizar o conteúdo completo de arquivos PDF, você pode:\n1. Abrir o arquivo em um leitor de PDF\n2. Usar o botão "Preencher Formulário" para extrair dados\n3. Ou copiar o texto do PDF e colar manualmente`;
+        }
+    } else {
+        fileInfo.style.display = 'none';
+        filePreview.style.display = 'none';
+    }
+}
+
+// Function to fill form from file preview
+function fillFormFromFile() {
+    const previewContent = document.getElementById('previewContent').textContent;
+    const fileInput = document.getElementById('emailFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Nenhum arquivo selecionado!');
+        return;
+    }
+    
+    // Switch to text input mode to show the filled fields
+    document.getElementById('textInput').checked = true;
+    const textSection = document.getElementById('textInputSection');
+    const fileSection = document.getElementById('fileUploadSection');
+    textSection.style.display = 'block';
+    fileSection.style.display = 'none';
+    
+    // Enable text inputs
+    const textInputs = textSection.querySelectorAll('input, textarea');
+    textInputs.forEach(input => {
+        input.disabled = false;
+        input.required = true;
+    });
+    
+    // Extract data using multiple patterns
+    let sender = '';
+    let subject = '';
+    let content = '';
+    
+    // Pattern 1: Standard email format with headers
+    const senderPattern = /(?:De|From):\s*(.*?)(?:\n|$)/i;
+    const subjectPattern = /(?:Assunto|Subject):\s*(.*?)(?:\n|$)/i;
+    
+    // Pattern 2: Look for email-like content
+    const emailPattern = /([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g;
+    
+    // Extract sender
+    const senderMatch = previewContent.match(senderPattern);
+    if (senderMatch) {
+        sender = senderMatch[1].trim();
+    } else {
+        // Try to find first email address
+        const emailMatches = previewContent.match(emailPattern);
+        if (emailMatches) {
+            sender = emailMatches[0];
+        }
+    }
+    
+    // Extract subject
+    const subjectMatch = previewContent.match(subjectPattern);
+    if (subjectMatch) {
+        subject = subjectMatch[1].trim();
+    } else {
+        // Try to find subject in first few lines
+        const lines = previewContent.split('\n');
+        for (let i = 0; i < Math.min(5, lines.length); i++) {
+            if (lines[i].includes('Assunto:') || lines[i].includes('Subject:')) {
+                subject = lines[i].replace(/(?:Assunto|Subject):\s*/i, '').trim();
+                break;
+            }
+        }
+    }
+    
+    // Extract content (everything after headers)
+    const contentStart = previewContent.indexOf('\n\n');
+    if (contentStart !== -1) {
+        content = previewContent.substring(contentStart + 2).trim();
+        // Remove any remaining headers
+        content = content.replace(/^(?:De|From|Para|To|Assunto|Subject|Data|Date):\s*.*?\n/gmi, '');
+        content = content.trim();
+    } else {
+        // If no clear separation, take everything after first few lines
+        const lines = previewContent.split('\n');
+        const contentLines = lines.slice(3); // Skip first 3 lines (usually headers)
+        content = contentLines.join('\n').trim();
+    }
+    
+    // Fill the form fields
+    if (sender) {
+        document.getElementById('{{ form.sender.id_for_label }}').value = sender;
+    }
+    if (subject) {
+        document.getElementById('{{ form.subject.id_for_label }}').value = subject;
+    }
+    if (content) {
+        document.getElementById('{{ form.content.id_for_label }}').value = content;
+    }
+    
+    // Show success message
+    let message = 'Formulário preenchido com sucesso!';
+    if (!sender || !subject || !content) {
+        message += '\n\nAlguns campos podem não ter sido preenchidos completamente. Verifique e ajuste conforme necessário.';
+    }
+    alert(message);
+}
+
+// Function to clear file preview
+function clearFilePreview() {
+    document.getElementById('emailFile').value = '';
+    document.getElementById('fileName').textContent = '';
+    document.getElementById('fileInfo').style.display = 'none';
+    document.getElementById('filePreview').style.display = 'none';
+    document.getElementById('previewContent').textContent = '';
+}
+
+// Form submission with loading indicator and validation
+document.getElementById('emailForm').addEventListener('submit', function(e) {
+    const selectedMethod = document.querySelector('input[name="inputMethod"]:checked').value;
+    
+    if (selectedMethod === 'file') {
+        const fileInput = document.getElementById('emailFile');
+        if (!fileInput.files[0]) {
+            e.preventDefault();
+            alert('Por favor, selecione um arquivo para upload');
+            return;
+        }
+    } else {
+        const textInputs = document.querySelectorAll('#textInputSection input, #textInputSection textarea');
+        let hasEmptyFields = false;
+        
+        textInputs.forEach(input => {
+            if (!input.value.trim()) {
+                hasEmptyFields = true;
+            }
+        });
+        
+        if (hasEmptyFields) {
+            e.preventDefault();
+            alert('Por favor, preencha todos os campos de texto');
+            return;
+        }
+    }
+    
+    // Show loading indicator
     document.getElementById('loadingIndicator').style.display = 'block';
     document.getElementById('processBtn').disabled = true;
 });

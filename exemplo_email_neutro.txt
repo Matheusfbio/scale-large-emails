@@ -1,0 +1,18 @@
+De: suporte@empresa.com.br
+Para: cliente@email.com
+Assunto: Confirmação de Cadastro
+Data: 15/01/2024
+
+Prezado Cliente,
+
+Recebemos seu cadastro em nosso sistema com sucesso.
+
+Seus dados foram registrados e você receberá um email de confirmação em breve.
+
+Em caso de dúvidas, entre em contato conosco através do telefone (11) 1234-5678 ou pelo email suporte@empresa.com.br.
+
+Agradecemos sua preferência.
+
+Atenciosamente,
+Equipe de Suporte
+Empresa Exemplo Ltda.
