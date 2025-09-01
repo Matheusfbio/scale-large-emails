@@ -136,8 +136,11 @@ def email_analytics(request):
         unproductive_percentage = 0
     
     # Get recent emails
-    recent_emails = EmailMessage.objects.all()[:10]
-    
+    recent_emails = EmailMessage.objects.order_by('-received_date')[:10]
+    for email in recent_emails:
+      email.confidence_display = round(email.confidence_score * 100, 1)
+
+
     context = {
         'total_emails': total_emails,
         'productive_emails': productive_emails,
