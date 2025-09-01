@@ -11,173 +11,379 @@
                 <h2>
                     <i class="fas fa-list me-2"></i>
                     Emails Processados
-                </h2>
-                <div>
-                    <a href="{% url 'email_processor' %}" class="btn btn-primary me-2">
-                        <i class="fas fa-plus me-2"></i>
-                        Novo Email
-                    </a>
-                    <a href="{% url 'email_analytics' %}" class="btn btn-outline-success">
-                        <i class="fas fa-chart-bar me-2"></i>
-                        Estatísticas
-                    </a>
-                </div>
+                </h1>
+                <p class="page-subtitle">Gerencie e analise seus emails processados</p>
             </div>
-
-            {% if emails %}
-                <div class="card shadow">
-                    <div class="card-header bg-light">
-                        <div class="row align-items-center">
-                            <div class="col-md-3">
-                                <strong>Remetente</strong>
-                            </div>
-                            <div class="col-md-3">
-                                <strong>Assunto</strong>
-                            </div>
-                            <div class="col-md-2">
-                                <strong>Categoria</strong>
-                            </div>
-                            <div class="col-md-2">
-                                <strong>Confiança</strong>
-                            </div>
-                            <div class="col-md-2">
-                                <strong>Ações</strong>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body p-0">
-                        {% for email in emails %}
-                        <div class="border-bottom p-3 {% cycle 'bg-light' 'bg-white' %}">
-                            <div class="row align-items-center">
-                                <div class="col-md-3">
-                                    <div class="d-flex align-items-center">
-                                        <i class="fas fa-user-circle text-muted me-2"></i>
-                                        <span class="text-truncate">{{ email.sender }}</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="text-truncate" title="{{ email.subject }}">
-                                        {{ email.subject }}
-                                    </div>
-                                    <small class="text-muted">{{ email.received_date|date:"d/m/Y H:i" }}</small>
-                                </div>
-                                <div class="col-md-2">
-                                    <span class="badge {% if email.category == 'produtivo' %}bg-success{% else %}bg-danger{% endif %}">
-                                        {{ email.category|title }}
-                                    </span>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="progress" style="height: 20px;">
-                                        <div class="progress-bar {% if email.category == 'produtivo' %}bg-success{% else %}bg-danger{% endif %}" 
-                                             role="progressbar" 
-                                             style="width: {{ email.confidence_score|floatformat:0 }}%">
-                                            {{ email.confidence_score|floatformat:1 }}%
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-2">
-                                    <div class="btn-group" role="group">
-                                        <button class="btn btn-sm btn-outline-info" 
-                                                data-bs-toggle="modal" 
-                                                data-bs-target="#emailModal{{ email.id }}">
-                                            <i class="fas fa-eye"></i>
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                onclick="copyResponse('{{ email.suggested_response|escapejs }}')">
-                                            <i class="fas fa-copy"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Email Detail Modal -->
-                        <div class="modal fade" id="emailModal{{ email.id }}" tabindex="-1">
-                            <div class="modal-dialog modal-lg">
-                                <div class="modal-content">
-                                    <div class="modal-header">
-                                        <h5 class="modal-title">
-                                            <i class="fas fa-envelope me-2"></i>
-                                            Detalhes do Email
-                                        </h5>
-                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                    </div>
-                                    <div class="modal-body">
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <h6>Informações:</h6>
-                                                <p><strong>Remetente:</strong> {{ email.sender }}</p>
-                                                <p><strong>Assunto:</strong> {{ email.subject }}</p>
-                                                <p><strong>Data:</strong> {{ email.received_date|date:"d/m/Y H:i" }}</p>
-                                                <p><strong>Categoria:</strong> 
-                                                    <span class="badge {% if email.category == 'produtivo' %}bg-success{% else %}bg-danger{% endif %}">
-                                                        {{ email.category|title }}
-                                                    </span>
-                                                </p>
-                                                <p><strong>Confiança:</strong> {{ email.confidence_score|floatformat:1 }}%</p>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <h6>Conteúdo:</h6>
-                                                <div class="border rounded p-3 bg-light" style="max-height: 200px; overflow-y: auto;">
-                                                    {{ email.content|linebreaks }}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="mt-3">
-                                            <h6>Resposta Sugerida:</h6>
-                                            <div class="border rounded p-3 bg-light">
-                                                {{ email.suggested_response|linebreaks }}
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-primary" 
-                                                onclick="copyResponse('{{ email.suggested_response|escapejs }}')">
-                                            <i class="fas fa-copy me-2"></i>
-                                            Copiar Resposta
-                                        </button>
-                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            {% else %}
-                <div class="text-center py-5">
-                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">Nenhum email processado ainda</h4>
-                    <p class="text-muted">Comece processando seu primeiro email!</p>
-                    <a href="{% url 'email_processor' %}" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>
-                        Processar Primeiro Email
-                    </a>
-                </div>
-            {% endif %}
+            <div class="header-actions">
+                <a href="{% url 'email_processor' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>
+                    Novo Email
+                </a>
+                <a href="{% url 'email_analytics' %}" class="btn btn-outline-success btn-lg">
+                    <i class="fas fa-chart-bar me-2"></i>
+                    Estatísticas
+                </a>
+            </div>
         </div>
     </div>
+
+    <!-- Filters and Search Section -->
+    <div class="filters-section">
+        <div class="filters-content">
+            <div class="search-box">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="emailSearch" class="form-control" placeholder="Buscar emails...">
+            </div>
+            <div class="filter-controls">
+                <select id="categoryFilter" class="form-select">
+                    <option value="">Todas as Categorias</option>
+                    <option value="produtivo">Produtivo</option>
+                    <option value="improdutivo">Improdutivo</option>
+                </select>
+                <select id="confidenceFilter" class="form-select">
+                    <option value="">Todas as Confianças</option>
+                    <option value="high">Alta (80%+)</option>
+                    <option value="medium">Média (40-79%)</option>
+                    <option value="low">Baixa (0-39%)</option>
+                </select>
+                <button id="clearFilters" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-2"></i>
+                    Limpar Filtros
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>{{ emails|length }}</h3>
+                    <p>Total de Emails</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon productive">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="productiveCount">0</h3>
+                    <p>Produtivos</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon unproductive">
+                    <i class="fas fa-times-circle"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="unproductiveCount">0</h3>
+                    <p>Improdutivos</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="productivityRate">0%</h3>
+                    <p>Taxa de Produtividade</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Emails Table -->
+    {% if emails %}
+        <div class="emails-table-container">
+            <div class="table-header">
+                <div class="table-title">
+                    <h3>Lista de Emails</h3>
+                    <span class="email-count">{{ emails|length }} emails encontrados</span>
+                </div>
+                <div class="table-actions">
+                    <button class="btn btn-outline-primary btn-sm" id="exportData">
+                        <i class="fas fa-download me-2"></i>
+                        Exportar
+                    </button>
+                </div>
+            </div>
+            
+            <div class="emails-table">
+                {% for email in emails %}
+                <div class="email-row" data-category="{{ email.category }}" data-confidence="{{ email.confidence_score }}">
+                    <div class="email-sender">
+                        <div class="sender-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div class="sender-info">
+                            <div class="sender-email">{{ email.sender }}</div>
+                            <div class="email-date">{{ email.received_date|date:"d/m/Y H:i" }}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="email-subject">
+                        <div class="subject-text">{{ email.subject }}</div>
+                        <div class="email-preview">{{ email.content|truncatechars:100 }}</div>
+                    </div>
+                    
+                    <div class="email-category">
+                        <span class="category-badge {% if email.category == 'produtivo' %}productive{% else %}unproductive{% endif %}">
+                            <i class="fas {% if email.category == 'produtivo' %}fa-check-circle{% else %}fa-times-circle{% endif %} me-2"></i>
+                            {{ email.category|title }}
+                        </span>
+                    </div>
+                    
+                    <div class="email-confidence">
+                        <div class="confidence-bar">
+                            <div class="confidence-fill {% if email.category == 'produtivo' %}productive{% else %}unproductive{% endif %}" 
+                                 style="width: {{ email.confidence_score|floatformat:0 }}%"></div>
+                        </div>
+                        <div class="confidence-text">{{ email.confidence_score|floatformat:1 }}%</div>
+                    </div>
+                    
+                    <div class="email-actions">
+                        <button class="action-btn view-btn" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#emailModal{{ email.id }}"
+                                title="Ver Detalhes">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="action-btn copy-btn" 
+                                onclick="copyResponse('{{ email.suggested_response|escapejs }}')"
+                                title="Copiar Resposta">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="action-btn more-btn" title="Mais Opções">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Email Detail Modal -->
+                <div class="modal fade" id="emailModal{{ email.id }}" tabindex="-1">
+                    <div class="modal-dialog modal-xl">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-envelope me-2"></i>
+                                    Detalhes do Email
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="email-details-grid">
+                                    <div class="detail-section">
+                                        <h6>Informações do Email</h6>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Remetente:</span>
+                                            <span class="detail-value">{{ email.sender }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Assunto:</span>
+                                            <span class="detail-value">{{ email.subject }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Data:</span>
+                                            <span class="detail-value">{{ email.received_date|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Categoria:</span>
+                                            <span class="category-badge {% if email.category == 'produtivo' %}productive{% else %}unproductive{% endif %}">
+                                                {{ email.category|title }}
+                                            </span>
+                                        </div>
+                                        <div class="detail-item">
+                                            <span class="detail-label">Confiança:</span>
+                                            <div class="confidence-display">
+                                                <div class="confidence-bar">
+                                                    <div class="confidence-fill {% if email.category == 'produtivo' %}productive{% else %}unproductive{% endif %}" 
+                                                         style="width: {{ email.confidence_score|floatformat:0 }}%"></div>
+                                                </div>
+                                                <span class="confidence-text">{{ email.confidence_score|floatformat:1 }}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-section">
+                                        <h6>Conteúdo do Email</h6>
+                                        <div class="email-content-display">
+                                            {{ email.content|linebreaks }}
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="detail-section full-width">
+                                        <h6>Resposta Sugerida</h6>
+                                        <div class="suggested-response">
+                                            {{ email.suggested_response|linebreaks }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-primary" 
+                                        onclick="copyResponse('{{ email.suggested_response|escapejs }}')">
+                                    <i class="fas fa-copy me-2"></i>
+                                    Copiar Resposta
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">
+                <i class="fas fa-inbox"></i>
+            </div>
+            <h3>Nenhum email processado ainda</h3>
+            <p>Comece processando seu primeiro email para ver as análises e estatísticas!</p>
+            <a href="{% url 'email_processor' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus me-2"></i>
+                Processar Primeiro Email
+            </a>
+        </div>
+    {% endif %}
 </div>
 
 <script>
+// Calculate statistics when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    calculateStatistics();
+    setupEventListeners();
+});
+
+function calculateStatistics() {
+    const emailRows = document.querySelectorAll('.email-row');
+    let productiveCount = 0;
+    let unproductiveCount = 0;
+    
+    emailRows.forEach(row => {
+        const category = row.dataset.category;
+        if (category === 'produtivo') {
+            productiveCount++;
+        } else if (category === 'improdutivo') {
+            unproductiveCount++;
+        }
+    });
+    
+    const totalEmails = emailRows.length;
+    const productivityRate = totalEmails > 0 ? Math.round((productiveCount / totalEmails) * 100) : 0;
+    
+    // Update statistics display
+    document.getElementById('productiveCount').textContent = productiveCount;
+    document.getElementById('unproductiveCount').textContent = unproductiveCount;
+    document.getElementById('productivityRate').textContent = productivityRate + '%';
+}
+
+function setupEventListeners() {
+    const searchInput = document.getElementById('emailSearch');
+    const categoryFilter = document.getElementById('categoryFilter');
+    const confidenceFilter = document.getElementById('confidenceFilter');
+    const clearFiltersBtn = document.getElementById('clearFilters');
+    const emailRows = document.querySelectorAll('.email-row');
+
+    function filterEmails() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const categoryValue = categoryFilter.value;
+        const confidenceValue = confidenceFilter.value;
+
+        emailRows.forEach(row => {
+            const sender = row.querySelector('.sender-email').textContent.toLowerCase();
+            const subject = row.querySelector('.subject-text').textContent.toLowerCase();
+            const category = row.dataset.category;
+            const confidence = parseFloat(row.dataset.confidence);
+
+            let showRow = true;
+
+            // Search filter
+            if (searchTerm && !sender.includes(searchTerm) && !subject.includes(searchTerm)) {
+                showRow = false;
+            }
+
+            // Category filter
+            if (categoryValue && category !== categoryValue) {
+                showRow = false;
+            }
+
+            // Confidence filter
+            if (confidenceValue) {
+                if (confidenceValue === 'high' && confidence < 80) showRow = false;
+                else if (confidenceValue === 'medium' && (confidence < 40 || confidence >= 80)) showRow = false;
+                else if (confidenceValue === 'low' && confidence >= 40) showRow = false;
+            }
+
+            row.style.display = showRow ? 'flex' : 'none';
+        });
+
+        updateEmailCount();
+    }
+
+    function updateEmailCount() {
+        const visibleEmails = document.querySelectorAll('.email-row[style="display: flex"]').length;
+        const countElement = document.querySelector('.email-count');
+        if (countElement) {
+            countElement.textContent = `${visibleEmails} emails encontrados`;
+        }
+    }
+
+    // Event listeners
+    searchInput.addEventListener('input', filterEmails);
+    categoryFilter.addEventListener('change', filterEmails);
+    confidenceFilter.addEventListener('change', filterEmails);
+    
+    clearFiltersBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        categoryFilter.value = '';
+        confidenceFilter.value = '';
+        filterEmails();
+    });
+
+    // Export functionality
+    document.getElementById('exportData').addEventListener('click', function() {
+        alert('Funcionalidade de exportação será implementada em breve!');
+    });
+}
+
+// Enhanced copy function
 function copyResponse(responseText) {
     navigator.clipboard.writeText(responseText).then(function() {
-        // Show success message
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<i class="fas fa-check me-2"></i>Copiado!';
-        btn.classList.remove('btn-outline-primary');
-        btn.classList.add('btn-success');
-        
-        setTimeout(function() {
-            btn.innerHTML = originalText;
-            btn.classList.remove('btn-success');
-            btn.classList.add('btn-outline-primary');
-        }, 2000);
+        const btn = event.target.closest('.copy-btn');
+        if (btn) {
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.classList.add('copied');
+            
+            setTimeout(function() {
+                btn.innerHTML = originalIcon;
+                btn.classList.remove('copied');
+            }, 2000);
+        }
     }).catch(function(err) {
         console.error('Erro ao copiar: ', err);
         alert('Erro ao copiar para a área de transferência');
     });
 }
+
+// Add hover effects and animations
+document.addEventListener('DOMContentLoaded', function() {
+    const emailRows = document.querySelectorAll('.email-row');
+    
+    emailRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
 </script>
 {% endblock %}
