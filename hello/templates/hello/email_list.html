@@ -9,7 +9,34 @@
 
 <div class="email-list-container">
     <div class="container">
-        <!-- ... cabeçalho e filtros mantidos iguais ... -->
+        <!-- Filtros -->
+        <div class="filters-section">
+            <div class="filters-content">
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="emailSearch" class="search-input" placeholder="Buscar por remetente ou assunto...">
+                </div>
+                
+                <div class="filter-controls">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">Todas as categorias</option>
+                        <option value="produtivo">Produtivo</option>
+                        <option value="improdutivo">Improdutivo</option>
+                    </select>
+                    
+                    <select id="confidenceFilter" class="filter-select">
+                        <option value="">Todos os níveis</option>
+                        <option value="high">Alta confiança (80%+)</option>
+                        <option value="medium">Média confiança (40-79%)</option>
+                        <option value="low">Baixa confiança (0-39%)</option>
+                    </select>
+                    
+                    <button id="clearFilters" class="btn-clear">
+                        <i class="fas fa-times me-2"></i>Limpar Filtros
+                    </button>
+                </div>
+            </div>
+        </div>
 
         {% if emails %}
             <div class="emails-table-container">
@@ -55,7 +82,14 @@
                         
                         <div class="email-confidence">
                             <div class="confidence-bar">
-                                <div class="confidence-fill {% if email.category == 'produtivo' %}productive{% else %}unproductive{% endif %}" 
+                                <div class="confidence-fill 
+                                            {% with confidence_percent=email.confidence_score|multiply:100|floatformat:0 %}
+                                                {% if confidence_percent >= 80 %}high-confidence
+                                                {% elif confidence_percent >= 60 %}medium-high-confidence
+                                                {% elif confidence_percent >= 40 %}medium-confidence
+                                                {% elif confidence_percent >= 20 %}low-medium-confidence
+                                                {% else %}low-confidence{% endif %}
+                                            {% endwith %}" 
                                      style="width: {{ email.confidence_score|multiply:100|floatformat:0 }}%"></div>
                             </div>
                             <div class="confidence-text">{{ email.confidence_score|multiply:100|floatformat:1 }}%</div>
@@ -190,6 +224,27 @@ function setupEventListeners() {
 /* Garante que todos aparecem inicialmente */
 .email-row {
     display: grid;
+}
+
+/* Classes para diferentes níveis de confiança */
+.confidence-fill.low-confidence {
+  background: #dc3545 !important;
+}
+
+.confidence-fill.low-medium-confidence {
+  background: linear-gradient(90deg, #dc3545, #fd7e14) !important;
+}
+
+.confidence-fill.medium-confidence {
+  background: #ffc107 !important;
+}
+
+.confidence-fill.medium-high-confidence {
+  background: linear-gradient(90deg, #ffc107, #28a745) !important;
+}
+
+.confidence-fill.high-confidence {
+  background: #28a745 !important;
 }
 </style>
 {% endblock %}

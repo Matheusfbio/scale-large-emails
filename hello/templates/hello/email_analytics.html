@@ -74,18 +74,18 @@
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
+            {% comment %} <div class="col-md-6">
                 <div class="card shadow-sm border-0 rounded-3">
                     <div class="card-header bg-light border-0">
                         <h5 class="mb-0 fw-semibold">
-                            <i class="fas fa-chart-line me-2 text-primary"></i>Nível de Confiança
+                            <i class="fas fa-chart-line me-2 text-primary"></i>Nível de Conasdasdfiança
                         </h5>
                     </div>
                     <div class="card-body">
                         <canvas id="confidenceChart" height="200"></canvas>
                     </div>
                 </div>
-            </div>
+            </div> {% endcomment %}
         </div>
 
         <!-- Recent Emails -->
@@ -121,7 +121,13 @@
                                     </td>
                                     <td>
                                       <div class="confidence-container">
-                                        <div class="confidence-fill" style="width: {{ email.confidence_display|default:0 }}%;">
+                                        <div class="confidence-fill 
+                                                    {% if email.confidence_display >= 80 %}high-confidence
+                                                    {% elif email.confidence_display >= 60 %}medium-high-confidence
+                                                    {% elif email.confidence_display >= 40 %}medium-confidence
+                                                    {% elif email.confidence_display >= 20 %}low-medium-confidence
+                                                    {% else %}low-confidence{% endif %}" 
+                                             style="width: {{ email.confidence_display|default:0 }}%;">
                                           {{ email.confidence_display }}%
                                         </div>
                                       </div>
@@ -262,7 +268,26 @@ const confidenceChart = new Chart(confidenceCtx, {
   color: white;
   border-radius: 10px;
   transition: width 0.5s ease-in-out;
-  background: linear-gradient(90deg, #ff4d6d, #ffb347, #00c6ff, #0072ff);
+}
+
+.confidence-fill.low-confidence {
+  background: #dc3545;
+}
+
+.confidence-fill.low-medium-confidence {
+  background: linear-gradient(90deg, #dc3545, #fd7e14);
+}
+
+.confidence-fill.medium-confidence {
+  background: #ffc107;
+}
+
+.confidence-fill.medium-high-confidence {
+  background: linear-gradient(90deg, #ffc107, #28a745);
+}
+
+.confidence-fill.high-confidence {
+  background: #28a745;
 }
 
 </style>

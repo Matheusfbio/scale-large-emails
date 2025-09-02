@@ -437,11 +437,11 @@
 }
 
 .confidence-fill.productive {
-    background: var(--success-gradient);
+    background: linear-gradient(90deg, #dc3545, #ffc107, #28a745, #198754);
 }
 
 .confidence-fill.unproductive {
-    background: var(--danger-gradient);
+    background: linear-gradient(90deg, #dc3545, #ffc107, #28a745, #198754);
 }
 
 .confidence-text {
