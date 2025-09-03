@@ -1,32 +1,117 @@
 {% extends "hello/layout.html" %}
 {% block title %}
-    Home
+    Sistema de Análise de Emails
 {% endblock %}
 {% block content %}
-    <h2>Messages</h2>
+<div class="hero-section text-center py-5 bg-gradient">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <h1 class="display-4 fw-bold text-primary mb-4">
+                    <i class="fas fa-brain me-3"></i>
+                    Sistema Inteligente de Análise de Emails
+                </h1>
+                <p class="lead mb-4">
+                    Automatize a classificação dos seus emails usando inteligência artificial. 
+                    Identifique emails produtivos, improdutivos e neutros com alta precisão.
+                </p>
+                
+                <div class="row mt-5">
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-card h-100 p-4">
+                            <i class="fas fa-robot fa-3x text-primary mb-3"></i>
+                            <h4>IA Avançada</h4>
+                            <p>Processamento de linguagem natural para análise precisa de conteúdo</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-card h-100 p-4">
+                            <i class="fas fa-chart-line fa-3x text-success mb-3"></i>
+                            <h4>Métricas Detalhadas</h4>
+                            <p>Estatísticas completas sobre produtividade dos seus emails</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-card h-100 p-4">
+                            <i class="fas fa-lightning-bolt fa-3x text-warning mb-3"></i>
+                            <h4>Processamento Rápido</h4>
+                            <p>Análise instantânea com sugestões de resposta automática</p>
+                        </div>
+                    </div>
+                </div>
 
-    {% if message_list %}
-        <table class="message_list">
-            <thead>
-            <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Message</th>
-            </tr>
-            </thead>  qw
-            <tbody>
-            {% for message in message_list %}
-                <tr>
-                    <td>{{ message.log_date | date:'d M Y' }}</td>
-                    <td>{{ message.log_date | time:'H:i:s' }}</td>
-                    <td>
-                        {{ message.message }}
-                    </td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-    {% else %}
-        <p>No messages have been logged. Use the <a href="{% url 'log' %}">Log Message form</a>.</p>
-    {% endif %}
+                <div class="cta-section mt-5">
+                    <p class="mb-4">Pronto para otimizar seu gerenciamento de emails?</p>
+                    <a href="{% url 'email_processor' %}" class="btn btn-primary btn-lg px-5 py-3">
+                        <i class="fas fa-rocket me-2"></i>
+                        Começar Agora
+                    </a>
+                </div>
+                
+                <div class="auto-redirect-info mt-4">
+                    <p class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Redirecionando automaticamente em <span id="countdown">5</span> segundos...
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.feature-card {
+    border-radius: 15px;
+    box-shadow: 0 5px 15px var(--card-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px var(--card-shadow);
+}
+
+.cta-section {
+    padding: 2rem;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px var(--card-shadow);
+}
+
+.btn-primary {
+    border-radius: 25px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(var(--btn-primary-bg), 0.4);
+}
+
+.auto-redirect-info {
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+</style>
+
+<script>
+// Auto redirect after 5 seconds
+let countdown = 5;
+const countdownElement = document.getElementById('countdown');
+
+const timer = setInterval(function() {
+    countdown--;
+    countdownElement.textContent = countdown;
+    
+    if (countdown <= 0) {
+        clearInterval(timer);
+        window.location.href = "{% url 'email_processor' %}";
+    }
+}, 1000);
+
+// Clear timer if user clicks the button
+document.querySelector('.btn-primary').addEventListener('click', function() {
+    clearInterval(timer);
+});
+</script>
 {% endblock %}

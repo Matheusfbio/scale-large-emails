@@ -12,6 +12,152 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link rel="stylesheet" type="text/css" href="{% static 'hello/site.css' %}"/>
+    
+    <!-- Theme System CSS -->
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8f9fa;
+            --bg-tertiary: #e9ecef;
+            --text-primary: #212529;
+            --text-secondary: #6c757d;
+            --text-muted: #868e96;
+            --border-color: #dee2e6;
+            --card-bg: #ffffff;
+            --card-shadow: rgba(0,0,0,0.1);
+            --navbar-bg: #0d6efd;
+            --navbar-text: #ffffff;
+            --btn-primary-bg: #0d6efd;
+            --btn-primary-text: #ffffff;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2d3748;
+            --bg-tertiary: #4a5568;
+            --text-primary: #f7fafc;
+            --text-secondary: #e2e8f0;
+            --text-muted: #a0aec0;
+            --border-color: #4a5568;
+            --card-bg: #2d3748;
+            --card-shadow: rgba(0,0,0,0.3);
+            --navbar-bg: #1a202c;
+            --navbar-text: #f7fafc;
+            --btn-primary-bg: #3182ce;
+            --btn-primary-text: #f7fafc;
+            --success-color: #38a169;
+            --warning-color: #d69e2e;
+            --danger-color: #e53e3e;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .navbar {
+            background-color: var(--navbar-bg) !important;
+        }
+
+        .navbar-brand, .navbar-nav .nav-link {
+            color: var(--navbar-text) !important;
+        }
+
+        .card, .feature-card, .cta-section {
+            background-color: var(--card-bg) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+        }
+
+        .bg-gradient {
+            background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%) !important;
+        }
+
+        .table {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .table th {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .table td {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .form-control {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border-color: var(--border-color);
+        }
+
+        .form-control:focus {
+            background-color: var(--card-bg);
+            color: var(--text-primary);
+            border-color: var(--btn-primary-bg);
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        .btn-primary {
+            background-color: var(--btn-primary-bg);
+            color: var(--btn-primary-text);
+            border-color: var(--btn-primary-bg);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--btn-primary-bg);
+            border-color: var(--btn-primary-bg);
+            opacity: 0.9;
+        }
+
+        .text-primary {
+            color: var(--btn-primary-bg) !important;
+        }
+
+        .text-success {
+            color: var(--success-color) !important;
+        }
+
+        .text-warning {
+            color: var(--warning-color) !important;
+        }
+
+        .text-danger {
+            color: var(--danger-color) !important;
+        }
+
+        .text-muted {
+            color: var(--text-muted) !important;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--navbar-text);
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-toggle:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .auto-redirect-info {
+            background-color: var(--card-bg) !important;
+            color: var(--text-secondary) !important;
+        }
+    </style>
 </head>
 
 <body>
@@ -48,17 +194,24 @@
                         <i class="fas fa-chart-bar me-1"></i>Estatísticas
                     </a>
                 </li>
-                <li class="nav-item">
+                {% comment %} <li class="nav-item">
                     <a class="nav-link" href="{% url 'log_message' %}">
                         <i class="fas fa-comment me-1"></i>Mensagens
                     </a>
-                </li>
+                </li> {% endcomment %}
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'about' %}">
                         <i class="fas fa-info-circle me-1"></i>Sobre
                     </a>
                 </li>
             </ul>
+            
+            <!-- Theme Toggle -->
+            <div class="d-flex align-items-center">
+                <button class="theme-toggle" id="themeToggle" title="Alternar tema">
+                    <i class="fas fa-moon" id="themeIcon"></i>
+                </button>
+            </div>
         </div>
     </div>
 </nav>
@@ -72,5 +225,55 @@
 
 <!-- Bootstrap JS -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Theme System JavaScript -->
+<script>
+    class ThemeManager {
+        constructor() {
+            this.themeToggle = document.getElementById('themeToggle');
+            this.themeIcon = document.getElementById('themeIcon');
+            this.init();
+        }
+
+        init() {
+            // Carrega tema salvo ou usa tema claro como padrão
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            this.setTheme(savedTheme);
+            
+            // Adiciona listener para o botão de toggle
+            this.themeToggle.addEventListener('click', () => {
+                const currentTheme = document.documentElement.getAttribute('data-theme');
+                const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+                this.setTheme(newTheme);
+            });
+        }
+
+        setTheme(theme) {
+            // Aplica o tema
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            // Salva a preferência
+            localStorage.setItem('theme', theme);
+            
+            // Atualiza o ícone
+            this.updateIcon(theme);
+        }
+
+        updateIcon(theme) {
+            if (theme === 'dark') {
+                this.themeIcon.className = 'fas fa-sun';
+                this.themeToggle.title = 'Alternar para tema claro';
+            } else {
+                this.themeIcon.className = 'fas fa-moon';
+                this.themeToggle.title = 'Alternar para tema escuro';
+            }
+        }
+    }
+
+    // Inicializa o gerenciador de tema quando o DOM estiver pronto
+    document.addEventListener('DOMContentLoaded', () => {
+        new ThemeManager();
+    });
+</script>
 </body>
 </html>

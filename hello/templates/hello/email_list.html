@@ -7,244 +7,495 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'hello/email_list.css' %}">
 
-<div class="email-list-container">
-    <div class="container">
-        <!-- Filtros -->
-        <div class="filters-section">
-            <div class="filters-content">
-                <div class="search-box">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="emailSearch" class="search-input" placeholder="Buscar por remetente ou assunto...">
-                </div>
-                
-                <div class="filter-controls">
-                    <select id="categoryFilter" class="filter-select">
-                        <option value="">Todas as categorias</option>
-                        <option value="produtivo">Produtivo</option>
-                        <option value="improdutivo">Improdutivo</option>
-                    </select>
-                    
-                    <select id="confidenceFilter" class="filter-select">
-                        <option value="">Todos os níveis</option>
-                        <option value="high">Alta confiança (80%+)</option>
-                        <option value="medium">Média confiança (40-79%)</option>
-                        <option value="low">Baixa confiança (0-39%)</option>
-                    </select>
-                    
-                    <button id="clearFilters" class="btn-clear">
-                        <i class="fas fa-times me-2"></i>Limpar Filtros
-                    </button>
-                </div>
+<div class="email-dashboard">
+  <div class="dashboard-header">
+    <h2><i class="fas fa-envelope me-2"></i> Caixa de Emails</h2>
+    <div class="actions">
+      <button class="btn btn-primary" id="exportData">
+        <i class="fas fa-download me-2"></i>Exportar
+      </button>
+    </div>
+  </div>
+
+  <!-- Filtros -->
+  <div class="filters-card">
+    <div class="filter-group">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" id="emailSearch" placeholder="Buscar por remetente ou assunto...">
+      </div>
+      <select id="categoryFilter">
+        <option value="">Todas as categorias</option>
+        <option value="produtivo">Produtivo</option>
+        <option value="improdutivo">Improdutivo</option>
+      </select>
+      <select id="confidenceFilter">
+        <option value="">Todos os níveis</option>
+        <option value="otimo">Ótimo (70%+)</option>
+        <option value="bom">Bom (40-69%)</option>
+        <option value="ruim">Ruim (0-39%)</option>
+      </select>
+      <button id="clearFilters" class="btn btn-outline">
+        <i class="fas fa-times me-1"></i>Limpar
+      </button>
+    </div>
+  </div>
+
+  {% if emails %}
+  <p class="email-count">{{ emails|length }} emails encontrados</p>
+  
+  <div class="email-list">
+    {% for email in emails %}
+    <div class="email-card" 
+         data-category="{{ email.category }}" 
+         data-confidence="{{ email.confidence_score|multiply:100|floatformat:0 }}">
+      
+      <div class="email-header">
+        <div class="avatar"><i class="fas fa-user"></i></div>
+        <div>
+          <p class="sender">{{ email.sender }}</p>
+          <span class="date">{{ email.received_date|date:"d/m/Y H:i" }}</span>
+        </div>
+      </div>
+
+      <div class="email-body">
+        <p class="subject">{{ email.subject }}</p>
+        <span class="preview">{{ email.content|truncatechars:100 }}</span>
+      </div>
+
+      <div class="email-footer">
+        <span class="badge {% if email.category == 'produtivo' %}badge-success{% else %}badge-danger{% endif %}">
+          <i class="fas {% if email.category == 'produtivo' %}fa-check-circle{% else %}fa-times-circle{% endif %} me-1"></i>
+          {{ email.category|title }}
+        </span>
+
+        <div class="confidence">
+          <div class="confidence-bar">
+            <div class="confidence-fill 
+              {% with confidence_percent=email.confidence_score|multiply:100|floatformat:0 %}
+                {% if confidence_percent >= 70 %}otimo
+                {% elif confidence_percent >= 40 %}bom
+                {% else %}ruim{% endif %}
+              {% endwith %} animate"
+              style="--final-width: {{ email.confidence_score|multiply:100|floatformat:0 }}%; width: {{ email.confidence_score|multiply:100|floatformat:0 }}%">
             </div>
+          </div>
+          <span class="confidence-text 
+            {% with confidence_percent=email.confidence_score|multiply:100|floatformat:0 %}
+              {% if confidence_percent >= 70 %}text-otimo
+              {% elif confidence_percent >= 40 %}text-bom
+              {% else %}text-ruim{% endif %}
+            {% endwith %}">
+            {{ email.confidence_score|multiply:100|floatformat:1 }}%
+            {% with confidence_percent=email.confidence_score|multiply:100|floatformat:0 %}
+              {% if confidence_percent >= 70 %} • Ótimo
+              {% elif confidence_percent >= 40 %} • Bom
+              {% else %} • Ruim{% endif %}
+            {% endwith %}
+          </span>
         </div>
 
-        {% if emails %}
-            <div class="emails-table-container">
-                <div class="table-header">
-                    <div class="table-title">
-                        <h3><i class="fas fa-list me-2"></i>Lista de Emails</h3>
-                        <span class="email-count">{{ emails|length }} emails encontrados</span>
-                    </div>
-                    <div class="table-actions">
-                        <button class="btn-modern btn-outline-modern" id="exportData">
-                            <i class="fas fa-download me-2"></i>
-                            Exportar Dados
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="emails-table">
-                    {% for email in emails %}
-                    <div class="email-row" 
-                         data-category="{{ email.category }}" 
-                         data-confidence="{{ email.confidence_score|multiply:100|floatformat:0 }}">
-                        <div class="email-sender">
-                            <div class="sender-avatar">
-                                <i class="fas fa-user"></i>
-                            </div>
-                            <div class="sender-info">
-                                <div class="sender-email">{{ email.sender }}</div>
-                                <div class="email-date">{{ email.received_date|date:"d/m/Y H:i" }}</div>
-                            </div>
-                        </div>
-                        
-                        <div class="email-subject">
-                            <div class="subject-text">{{ email.subject }}</div>
-                            <div class="email-preview">{{ email.content|truncatechars:100 }}</div>
-                        </div>
-                        
-                        <div class="email-category">
-                            <span class="category-badge {% if email.category == 'produtivo' %}productive{% else %}unproductive{% endif %}">
-                                <i class="fas {% if email.category == 'produtivo' %}fa-check-circle{% else %}fa-times-circle{% endif %} me-2"></i>
-                                {{ email.category|title }}
-                            </span>
-                        </div>
-                        
-                        <div class="email-confidence">
-                            <div class="confidence-bar">
-                                <div class="confidence-fill 
-                                            {% with confidence_percent=email.confidence_score|multiply:100|floatformat:0 %}
-                                                {% if confidence_percent >= 80 %}high-confidence
-                                                {% elif confidence_percent >= 60 %}medium-high-confidence
-                                                {% elif confidence_percent >= 40 %}medium-confidence
-                                                {% elif confidence_percent >= 20 %}low-medium-confidence
-                                                {% else %}low-confidence{% endif %}
-                                            {% endwith %}" 
-                                     style="width: {{ email.confidence_score|multiply:100|floatformat:0 }}%"></div>
-                            </div>
-                            <div class="confidence-text">{{ email.confidence_score|multiply:100|floatformat:1 }}%</div>
-                        </div>
-                        
-                        <div class="email-actions">
-                            <button class="action-btn view-btn" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#emailModal{{ email.id }}"
-                                    title="Ver Detalhes">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="action-btn copy-btn" 
-                                    onclick="copyResponse('{{ email.suggested_response|escapejs }}')"
-                                    title="Copiar Resposta">
-                                <i class="fas fa-copy"></i>
-                            </button>
-                            <button class="action-btn more-btn" title="Mais Opções">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Modal igual, sem alterações -->
-                    {% endfor %}
-                </div>
-            </div>
-        {% else %}
-            <!-- Empty state igual -->
-        {% endif %}
+        <div class="email-actions">
+          <button title="Ver Detalhes" data-bs-toggle="modal" data-bs-target="#emailModal{{ email.id }}"><i class="fas fa-eye"></i></button>
+          <button title="Copiar Resposta" onclick="copyResponse('{{ email.suggested_response|escapejs }}')"><i class="fas fa-copy"></i></button>
+        </div>
+      </div>
     </div>
+
+    <!-- Modal de Detalhes -->
+    <div class="modal fade" id="emailModal{{ email.id }}" tabindex="-1" aria-labelledby="emailModalLabel{{ email.id }}" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark text-white">
+          <div class="modal-header">
+            <h5 class="modal-title" id="emailModalLabel{{ email.id }}">Detalhes do Email</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Remetente:</strong> {{ email.sender }}</p>
+            <p><strong>Assunto:</strong> {{ email.subject }}</p>
+            <p><strong>Conteúdo:</strong></p>
+            <p>{{ email.content }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <div class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <p>Nenhum email encontrado</p>
+    </div>
+  {% endif %}
+</div>
+
+<!-- Menu de Mais Opções -->
+<div id="contextMenu" class="context-menu">
+  <ul>
+    <li onclick="alert('Marcar como Lido')">Marcar como Lido</li>
+    <li onclick="alert('Mover para Arquivo')">Mover para Arquivo</li>
+    <li onclick="alert('Excluir Email')">Excluir</li>
+  </ul>
 </div>
 
 <script>
-// Ao carregar a página, apenas mostra os dados, sem filtrar
-document.addEventListener('DOMContentLoaded', function() {
-    calculateStatistics();
-    setupEventListeners();
-    addLoadingStates();
-    addSmoothAnimations();
-    // REMOVIDO filterEmails() aqui
-});
-
-function setupEventListeners() {
-    const searchInput = document.getElementById('emailSearch');
-    const categoryFilter = document.getElementById('categoryFilter');
-    const confidenceFilter = document.getElementById('confidenceFilter');
-    const clearFiltersBtn = document.getElementById('clearFilters');
-    const emailRows = document.querySelectorAll('.email-row');
-
-    function filterEmails() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const categoryValue = categoryFilter.value;
-        const confidenceValue = confidenceFilter.value;
-
-        emailRows.forEach((row, index) => {
-            const sender = row.querySelector('.sender-email').textContent.toLowerCase();
-            const subject = row.querySelector('.subject-text').textContent.toLowerCase();
-            const category = row.dataset.category;
-            const confidence = parseFloat(row.dataset.confidence); // já em %
-
-            let showRow = true;
-
-            // Filtro de busca
-            if (searchTerm && !sender.includes(searchTerm) && !subject.includes(searchTerm)) {
-                showRow = false;
-            }
-
-            // Filtro de categoria
-            if (categoryValue && category !== categoryValue) {
-                showRow = false;
-            }
-
-            // Filtro de confiança
-            if (confidenceValue) {
-                if (confidenceValue === 'high' && confidence < 80) showRow = false;
-                else if (confidenceValue === 'medium' && (confidence < 40 || confidence >= 80)) showRow = false;
-                else if (confidenceValue === 'low' && confidence >= 40) showRow = false;
-            }
-
-            row.style.display = showRow ? 'grid' : 'none';
-            if (showRow) {
-                row.style.animationDelay = `${index * 0.1}s`;
-                row.classList.add('fade-in');
-            }
-        });
-
-        updateEmailCount();
-    }
-
-    function updateEmailCount() {
-        const visibleEmails = document.querySelectorAll('.email-row[style="display: grid"]').length;
-        const countElement = document.querySelector('.email-count');
-        if (countElement) {
-            countElement.textContent = `${visibleEmails} emails encontrados`;
-        }
-    }
-
-    // Event listeners
-    let searchTimeout;
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(filterEmails, 300);
-    });
-    
-    categoryFilter.addEventListener('change', filterEmails);
-    confidenceFilter.addEventListener('change', filterEmails);
-    
-    clearFiltersBtn.addEventListener('click', function() {
-        searchInput.value = '';
-        categoryFilter.value = '';
-        confidenceFilter.value = '';
-        filterEmails();
-        
-        this.innerHTML = '<i class="fas fa-check me-2"></i>Filtros Limpos!';
-        setTimeout(() => {
-            this.innerHTML = '<i class="fas fa-times me-2"></i>Limpar Filtros';
-        }, 2000);
-    });
-
-    document.getElementById('exportData').addEventListener('click', function() {
-        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Exportando...';
-        setTimeout(() => {
-            this.innerHTML = '<i class="fas fa-download me-2"></i>Exportar Dados';
-            showNotification('Funcionalidade de exportação será implementada em breve!', 'info');
-        }, 2000);
-    });
+function copyResponse(text) {
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Resposta copiada!');
+  }).catch(err => console.error('Erro ao copiar:', err));
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+  const search = document.getElementById('emailSearch');
+  const category = document.getElementById('categoryFilter');
+  const confidence = document.getElementById('confidenceFilter');
+  const clearBtn = document.getElementById('clearFilters');
+  const cards = document.querySelectorAll('.email-card');
+
+  function filter() {
+    const term = search.value.toLowerCase();
+    const cat = category.value;
+    const conf = confidence.value;
+
+    let visibleCount = 0;
+
+    cards.forEach(card => {
+      const sender = card.querySelector('.sender').textContent.toLowerCase();
+      const subj = card.querySelector('.subject').textContent.toLowerCase();
+      const cardCat = card.dataset.category;
+      const cardConf = parseFloat(card.dataset.confidence);
+
+      let show = true;
+      if (term && !sender.includes(term) && !subj.includes(term)) show = false;
+      if (cat && cardCat !== cat) show = false;
+      if (conf === 'otimo' && cardConf < 70) show = false;
+      if (conf === 'bom' && (cardConf < 40 || cardConf >= 70)) show = false;
+      if (conf === 'ruim' && cardConf >= 40) show = false;
+
+      card.style.display = show ? 'block' : 'none';
+      if (show) visibleCount++;
+    });
+
+    document.querySelector('.email-count').textContent = `${visibleCount} emails encontrados`;
+  }
+
+  search.addEventListener('input', filter);
+  category.addEventListener('change', filter);
+  confidence.addEventListener('change', filter);
+
+  clearBtn.addEventListener('click', () => {
+    search.value = '';
+    category.value = '';
+    confidence.value = '';
+    filter();
+  });
+
+  // Menu de Mais Opções
+  const contextMenu = document.getElementById('contextMenu');
+  document.querySelectorAll('.more-options-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const rect = btn.getBoundingClientRect();
+      contextMenu.style.top = `${rect.bottom}px`;
+      contextMenu.style.left = `${rect.left}px`;
+      contextMenu.style.display = 'block';
+    });
+  });
+
+  window.addEventListener('click', () => {
+    contextMenu.style.display = 'none';
+  });
+
+  // Animar as barras quando a página carregar
+  const fills = document.querySelectorAll('.confidence-fill');
+  
+  setTimeout(() => {
+    fills.forEach(fill => {
+      fill.classList.add('animate');
+      
+      // Debug: verificar se as classes estão sendo aplicadas corretamente
+      const confidence = parseFloat(fill.dataset.confidence);
+      console.log(`Confiança: ${confidence}%, Classes: ${fill.className}`);
+      
+      // Forçar aplicação das classes corretas se necessário
+      fill.classList.remove('otimo', 'bom', 'ruim');
+      if (confidence >= 70) {
+        fill.classList.add('otimo');
+      } else if (confidence >= 40) {
+        fill.classList.add('bom');
+      } else {
+        fill.classList.add('ruim');
+      }
+    });
+  }, 300);
+});
 </script>
 
 <style>
-/* Garante que todos aparecem inicialmente */
-.email-row {
-    display: grid;
+/* Layout geral */
+.email-dashboard {
+  padding: 20px;
+  color: #fff;
+  background: #121212;
+  font-family: Arial, sans-serif;
 }
 
-/* Classes para diferentes níveis de confiança */
-.confidence-fill.low-confidence {
-  background: #dc3545 !important;
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
 }
 
-.confidence-fill.low-medium-confidence {
-  background: linear-gradient(90deg, #dc3545, #fd7e14) !important;
+.filters-card {
+  background: #1f1f1f;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
 }
 
-.confidence-fill.medium-confidence {
-  background: #ffc107 !important;
+.filter-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.confidence-fill.medium-high-confidence {
-  background: linear-gradient(90deg, #ffc107, #28a745) !important;
+.search-box {
+  display: flex;
+  align-items: center;
+  background: #2a2a2a;
+  padding: 5px 10px;
+  border-radius: 6px;
+  flex: 1;
 }
 
-.confidence-fill.high-confidence {
-  background: #28a745 !important;
+.search-box input {
+  border: none;
+  background: transparent;
+  color: white;
+  outline: none;
+  margin-left: 8px;
+  width: 100%;
+}
+
+select, .btn {
+  background: #2a2a2a;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.btn-primary {
+  background: #4cafef;
+  border: none;
+}
+
+.email-list {
+  display: grid;
+  gap: 12px;
+}
+
+.email-card {
+  background: #1f1f1f;
+  padding: 15px;
+  border-radius: 10px;
+  transition: transform .2s;
+}
+
+.email-card:hover {
+  transform: scale(1.02);
+}
+
+.email-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  background: #4cafef;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.subject {
+  font-weight: bold;
+  margin: 5px 0;
+}
+
+.preview {
+  color: #aaa;
+  font-size: 14px;
+}
+
+.email-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 15px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.badge-success { 
+  background: #28a745;
+  color: white;
+}
+.badge-danger { 
+  background: #dc3545;
+  color: white;
+}
+
+/* Barra de confiança melhorada */
+.confidence {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.confidence-bar {
+  background: #333;
+  border-radius: 20px;
+  height: 20px;
+  width: 80px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.confidence-fill {
+  height: 100%;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  position: relative;
+  background: linear-gradient(90deg, var(--start-color), var(--end-color));
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.2),
+    inset 0 1px 2px rgba(255,255,255,0.2);
+}
+
+/* Sistema de cores dinâmico: Ruim, Bom, Ótimo */
+
+/* ÓTIMO (70% ou mais) - Verde vibrante */
+.confidence-fill.otimo {
+  --start-color: #00d84a;
+  --end-color: #00b341;
+  background: linear-gradient(90deg, #00d84a, #00b341);
+  box-shadow: 
+    0 3px 12px rgba(0, 216, 74, 0.4),
+    inset 0 1px 3px rgba(255,255,255,0.3);
+}
+
+/* BOM (40-69%) - Amarelo/Laranja otimista */
+.confidence-fill.bom {
+  --start-color: #ffb347;
+  --end-color: #ff8c00;
+  background: linear-gradient(90deg, #ffb347, #ff8c00);
+  box-shadow: 
+    0 2px 8px rgba(255, 179, 71, 0.3),
+    inset 0 1px 2px rgba(255,255,255,0.2);
+}
+
+/* RUIM (0-39%) - Vermelho suave */
+.confidence-fill.ruim {
+  --start-color: #ff6b6b;
+  --end-color: #e74c3c;
+  background: linear-gradient(90deg, #ff6b6b, #e74c3c);
+  box-shadow: 
+    0 2px 6px rgba(255, 107, 107, 0.3),
+    inset 0 1px 2px rgba(255,255,255,0.15);
+}
+
+.confidence-text {
+  font-weight: bold;
+  font-size: 11px;
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+}
+
+/* Cores do texto baseadas na qualidade */
+.text-otimo {
+  color: #00d84a;
+}
+
+.text-bom {
+  color: #ffb347;
+}
+
+.text-ruim {
+  color: #ff6b6b;
+}
+
+/* Animação ao carregar */
+@keyframes fillBar {
+  from { width: 0%; }
+  to { width: var(--final-width); }
+}
+
+.confidence-fill.animate {
+  animation: fillBar 1s ease-out;
+}
+
+.email-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+.email-actions button {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+}
+.empty-state {
+  text-align: center;
+  color: #888;
+  margin-top: 50px;
+}
+.empty-state i {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+/* Context Menu */
+.context-menu {
+  position: absolute;
+  background: #1f1f1f;
+  border: 1px solid #444;
+  border-radius: 6px;
+  display: none;
+  z-index: 1000;
+}
+.context-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.context-menu li {
+  padding: 8px 12px;
+  cursor: pointer;
+  color: white;
+}
+.context-menu li:hover {
+  background: #333;
 }
 </style>
 {% endblock %}

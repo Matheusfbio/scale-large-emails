@@ -1,5 +1,33 @@
 {% extends 'hello/layout.html' %}
 
 {% block content %}
-    <h1>{% block title %} This Django app uses databases to manage a list of user inputted items! {% endblock %}</h1>
+<div class="container py-5 text-center">
+  <h1 class="display-4 fw-bold text-primary mb-4">
+    <i class="fas fa-envelope-open-text me-2"></i> Organize Seus Emails com Inteligência
+  </h1>
+
+  <p class="lead text-muted mb-4">
+    Este sistema foi criado para transformar sua caixa de entrada em um espaço produtivo. 
+    Ele classifica automaticamente suas mensagens e oferece insights para que você foque no que realmente importa.
+  </p>
+
+  <p class="mb-4">
+    <strong>Sobre o desenvolvedor:</strong><br>
+    Este projeto foi desenvolvido por <span class="fw-bold text-primary">Mateus Fabio</span>, 
+    apaixonado por tecnologia e soluções que facilitam o dia a dia. 
+    O sistema foi pensado para ser simples, eficiente e intuitivo, 
+    com uma interface amigável que qualquer pessoa consegue usar.
+  </p>
+
+  <p class="mb-4">
+    Durante a construção, o foco foi combinar organização, produtividade e clareza. 
+    Cada detalhe do design e da experiência do usuário foi cuidadosamente planejado para que 
+    você possa processar seus emails de forma rápida e prática.
+  </p>
+
+  {# Link temporário, substitua quando tiver a URL correta #}
+  <a href="#" class="btn btn-lg btn-primary shadow">
+    <i class="fas fa-magic me-2"></i> Experimente Agora
+  </a>
+</div>
 {% endblock %}

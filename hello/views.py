@@ -11,13 +11,9 @@ from django.utils.decorators import method_decorator
 from .nlp_processor import EmailProcessor
 import json
 
-class HomeListView(ListView):
-    """Renders the home page, with a list of all messages."""
-    model = LogMessage
-
-    def get_context_data(self, **kwargs):
-        context = super(HomeListView, self).get_context_data(**kwargs)
-        return context
+def home(request):
+    """Renders the home page with project presentation."""
+    return render(request, "hello/home.html")
 
 def about(request):
     return render(request, "hello/about.html")
