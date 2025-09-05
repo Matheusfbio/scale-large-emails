@@ -11,7 +11,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'web_django.settings')
 django.setup()
 
-from hello.nlp_processor import EmailProcessor
+from email_analyzer.nlp_processor import EmailProcessor
 
 def test_email_classification():
     """Testa a classificação de diferentes tipos de emails"""

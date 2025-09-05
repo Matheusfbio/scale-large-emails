@@ -3,8 +3,8 @@ from django.utils.timezone import datetime
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.shortcuts import redirect
-from hello.forms import LogMessageForm, EmailMessageForm
-from hello.models import LogMessage, EmailMessage
+from email_analyzer.forms import LogMessageForm, EmailMessageForm
+from email_analyzer.models import LogMessage, EmailMessage
 from django.views.generic import ListView
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
@@ -13,10 +13,10 @@ import json
 
 def home(request):
     """Renders the home page with project presentation."""
-    return render(request, "hello/home.html")
+    return render(request, "email_analyzer/home.html")
 
 def about(request):
-    return render(request, "hello/about.html")
+    return render(request, "email_analyzer/about.html")
 
 # Add this code elsewhere in the file:
 def log_message(request):
@@ -29,7 +29,7 @@ def log_message(request):
             message.save()
             return redirect("home")
     else:
-        return render(request, "hello/log_message.html", {"form": form})
+        return render(request, "email_analyzer/log_message.html", {"form": form})
 
 def email_processor(request):
     """Main view for email processing"""
@@ -53,19 +53,19 @@ def email_processor(request):
             email.is_processed = True
             email.save()
             
-            return render(request, "hello/email_result.html", {
+            return render(request, "email_analyzer/email_result.html", {
                 "email": email,
                 "results": results
             })
     else:
         form = EmailMessageForm()
     
-    return render(request, "hello/email_processor.html", {"form": form})
+    return render(request, "email_analyzer/email_processor.html", {"form": form})
 
 def email_list(request):
     """View to list all processed emails"""
     emails = EmailMessage.objects.all()
-    return render(request, "hello/email_list.html", {"emails": emails})
+    return render(request, "email_analyzer/email_list.html", {"emails": emails})
 
 @csrf_exempt
 def api_process_email(request):
@@ -146,4 +146,4 @@ def email_analytics(request):
         'recent_emails': recent_emails
     }
     
-    return render(request, "hello/email_analytics.html", context)
+    return render(request, "email_analyzer/email_analytics.html", context)

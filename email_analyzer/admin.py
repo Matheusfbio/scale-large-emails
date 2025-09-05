@@ -1,5 +1,5 @@
 from django.contrib import admin
-from hello.models import LogMessage, EmailMessage
+from email_analyzer.models import LogMessage, EmailMessage
 
 @admin.register(LogMessage)
 class LogMessageAdmin(admin.ModelAdmin):

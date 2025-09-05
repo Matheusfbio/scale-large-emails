@@ -1,5 +1,5 @@
 from django import forms
-from hello.models import LogMessage, EmailMessage
+from email_analyzer.models import LogMessage, EmailMessage
 
 class LogMessageForm(forms.ModelForm):
     """Form for the log message model."""
