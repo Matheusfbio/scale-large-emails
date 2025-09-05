@@ -5,7 +5,7 @@ FROM python:3.11-slim
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     DJANGO_SETTINGS_MODULE=web_django.settings \
-    PORT=8000
+    PORT=10000
 
 # Set work directory
 WORKDIR /app
