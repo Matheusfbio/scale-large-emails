@@ -17,9 +17,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from django.contrib.staticfiles.urls import staticfiles_urlpatterns
+from django.http import JsonResponse
 
+def health_check(request):
+    return JsonResponse({"status": "healthy", "message": "Django app running"})
 
 urlpatterns = [
+    path("health/", health_check, name="health"),
     path("", include("email_analyzer.urls")),
     path('admin/', admin.site.urls)
 ]
